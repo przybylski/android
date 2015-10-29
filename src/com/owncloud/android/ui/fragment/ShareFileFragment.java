@@ -2,6 +2,7 @@
  *   ownCloud Android client application
  *
  *   @author masensio
+ *   @author David A. Velasco
  *   Copyright (C) 2015 ownCloud Inc.
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -40,6 +41,7 @@ import com.owncloud.android.datamodel.OCFile;
 import com.owncloud.android.datamodel.ThumbnailsCacheManager;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.shares.OCShare;
+import com.owncloud.android.ui.activity.FileActivity;
 import com.owncloud.android.ui.activity.ShareActivity;
 import com.owncloud.android.ui.adapter.ShareUserListAdapter;
 import com.owncloud.android.utils.DisplayUtils;
@@ -48,12 +50,14 @@ import com.owncloud.android.utils.MimetypeIconUtil;
 import java.util.ArrayList;
 
 /**
- * Fragment for Sharing a file with users
+ * Fragment for Sharing a file with sharees (users or groups)
  *
  * A simple {@link Fragment} subclass.
+ *
  * Activities that contain this fragment must implement the
  * {@link ShareFileFragment.OnShareFragmentInteractionListener} interface
  * to handle interaction events.
+ *
  * Use the {@link ShareFileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
@@ -70,9 +74,9 @@ public class ShareFileFragment extends Fragment
     private OCFile mFile;
     private Account mAccount;
 
+    // other members
     private ArrayList<OCShare> mShares;
     private ShareUserListAdapter mUserGroupsAdapter = null;
-
     private OnShareFragmentInteractionListener mListener;
 
     /**
@@ -95,6 +99,9 @@ public class ShareFileFragment extends Fragment
         // Required empty public constructor
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +111,9 @@ public class ShareFileFragment extends Fragment
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -142,7 +152,7 @@ public class ShareFileFragment extends Fragment
                  boolean shareWithUsersEnable = AccountUtils.hasSearchUsersSupport(mAccount);
                 if (shareWithUsersEnable) {
                     // Show Search Fragment
-                    mListener.showSearchUsersAndGroups(mShares);
+                    mListener.showSearchUsersAndGroups();
                 } else {
                     String message = getString(R.string.share_sharee_unavailable);
                     Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
@@ -157,8 +167,8 @@ public class ShareFileFragment extends Fragment
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        // Load data to the list (start process with an Async Task)
-        mListener.refreshUsersOrGroupsListFromServer();
+        // Load data into the list
+        refreshUsersOrGroupsListFromDB();
     }
 
     @Override
@@ -179,21 +189,33 @@ public class ShareFileFragment extends Fragment
     }
 
     /**
-     * Get users and groups fromn the DB to fill in the "share with" list
+     * Get users and groups from the DB to fill in the "share with" list
+     *
+     * Depends on the parent Activity provides a {@link com.owncloud.android.datamodel.FileDataStorageManager}
+     * instance ready to use. If not ready, does nothing.
      */
     public void refreshUsersOrGroupsListFromDB (){
-        // Get Users and Groups
-        mShares = ((ShareActivity) mListener).getStorageManager().getSharesWithForAFile(mFile.getRemotePath(),
-                mAccount.name);
+        if (((FileActivity) mListener).getStorageManager() != null) {
+            // Get Users and Groups
+            mShares = ((FileActivity) mListener).getStorageManager().getSharesWithForAFile(
+                    mFile.getRemotePath(),
+                    mAccount.name
+            );
 
-        // Update list of users/groups
-        updateListOfUserGroups();
+            // Update list of users/groups
+            updateListOfUserGroups();
+        }
     }
 
     private void updateListOfUserGroups() {
         // Update list of users/groups
-        mUserGroupsAdapter = new ShareUserListAdapter(getActivity().getApplicationContext(),
-                R.layout.share_user_item, mShares, this);
+        // TODO Refactoring: create a new {@link ShareUserListAdapter} instance with every call should not be needed
+        mUserGroupsAdapter = new ShareUserListAdapter(
+                getActivity(),
+                R.layout.share_user_item,
+                mShares,
+                this
+        );
 
         // Show data
         TextView noShares = (TextView) getView().findViewById(R.id.shareNoUsers);
@@ -229,7 +251,7 @@ public class ShareFileFragment extends Fragment
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnShareFragmentInteractionListener {
-        void showSearchUsersAndGroups(ArrayList<OCShare> shares);
+        void showSearchUsersAndGroups();
         void refreshUsersOrGroupsListFromServer();
         void unshareWith(OCShare share);
     }

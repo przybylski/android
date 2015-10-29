@@ -39,71 +39,77 @@ import com.owncloud.android.R;
 import com.owncloud.android.datamodel.OCFile;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.shares.OCShare;
+import com.owncloud.android.ui.activity.FileActivity;
 import com.owncloud.android.ui.activity.ShareActivity;
 import com.owncloud.android.ui.adapter.ShareUserListAdapter;
 
 import java.util.ArrayList;
 
 /**
- * Fragment for Searching users and groups
+ * Fragment for Searching sharees (users and groups)
  *
  * A simple {@link Fragment} subclass.
+ *
  * Activities that contain this fragment must implement the
- * {@link SearchFragment.OnSearchFragmentInteractionListener} interface
+ * {@link SearchShareesFragment.OnSearchFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link SearchFragment#newInstance} factory method to
+ *
+ * Use the {@link SearchShareesFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SearchFragment extends Fragment implements ShareUserListAdapter.ShareUserAdapterListener {
-    private static final String TAG = SearchFragment.class.getSimpleName();
+public class SearchShareesFragment extends Fragment implements ShareUserListAdapter.ShareUserAdapterListener {
+    private static final String TAG = SearchShareesFragment.class.getSimpleName();
 
     // the fragment initialization parameters
     private static final String ARG_FILE = "FILE";
     private static final String ARG_ACCOUNT = "ACCOUNT";
-    private static final String ARG_SHARES = "SHARES";
 
     // Parameters
     private OCFile mFile;
     private Account mAccount;
+
+    // other members
     private ArrayList<OCShare> mShares;
     private ShareUserListAdapter mUserGroupsAdapter = null;
-
     private OnSearchFragmentInteractionListener mListener;
 
+
     /**
-     * Public factory method to create new SearchFragment instances.
+     * Public factory method to create new SearchShareesFragment instances.
      *
-     * @param fileToShare   An {@link OCFile} to show in the fragment
-     * @param account       An ownCloud account
-     * @param
-     * @return A new instance of fragment SearchFragment.
+     * @param fileToShare   An {@link OCFile} to be shared
+     * @param account       The ownCloud account containing fileToShare
+     * @return A new instance of fragment SearchShareesFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static SearchFragment newInstance(OCFile fileToShare, Account account, ArrayList<OCShare> shares) {
-        SearchFragment fragment = new SearchFragment();
+    public static SearchShareesFragment newInstance(OCFile fileToShare, Account account) {
+        SearchShareesFragment fragment = new SearchShareesFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_FILE, fileToShare);
         args.putParcelable(ARG_ACCOUNT, account);
-        args.putParcelableArrayList(ARG_SHARES, shares);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public SearchFragment() {
+    public SearchShareesFragment() {
         // Required empty public constructor
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mFile = getArguments().getParcelable(ARG_FILE);
             mAccount = getArguments().getParcelable(ARG_ACCOUNT);
-            mShares = getArguments().getParcelableArrayList(ARG_SHARES);
         }
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -134,34 +140,45 @@ public class SearchFragment extends Fragment implements ShareUserListAdapter.Sha
             }
         });
 
-        // Show data: Fill in list of users and groups
-        ListView usersList = (ListView) view.findViewById(R.id.searchUsersListView);
-        mUserGroupsAdapter = new ShareUserListAdapter(getActivity().getApplicationContext(),
-                R.layout.share_user_item, mShares, this);
-        if (mShares.size() > 0) {
-            usersList.setVisibility(View.VISIBLE);
-            usersList.setAdapter(mUserGroupsAdapter);
-        }
-
         return view;
     }
 
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        // Load data into the list
+        refreshUsersOrGroupsListFromDB();
+    }
+
+
     /**
-     * Get users and groups fromn the DB to fill in the "share with" list
+     * Get users and groups from the DB to fill in the "share with" list
+     *
+     * Depends on the parent Activity provides a {@link com.owncloud.android.datamodel.FileDataStorageManager}
+     * instance ready to use. If not ready, does nothing.
      */
     public void refreshUsersOrGroupsListFromDB (){
         // Get Users and Groups
-        mShares = ((ShareActivity) mListener).getStorageManager().getSharesWithForAFile(mFile.getRemotePath(),
-                mAccount.name);
+        if (((FileActivity) mListener).getStorageManager() != null) {
+            mShares = ((FileActivity) mListener).getStorageManager().getSharesWithForAFile(
+                    mFile.getRemotePath(),
+                    mAccount.name
+            );
 
-        // Update list of users/groups
-        updateListOfUserGroups();
+            // Update list of users/groups
+            updateListOfUserGroups();
+        }
     }
 
     private void updateListOfUserGroups() {
         // Update list of users/groups
-        mUserGroupsAdapter = new ShareUserListAdapter(getActivity().getApplicationContext(),
-                R.layout.share_user_item, mShares, this);
+        // TODO Refactoring: create a new {@link ShareUserListAdapter} instance with every call should not be needed
+        mUserGroupsAdapter = new ShareUserListAdapter(
+                getActivity().getApplicationContext(),
+                R.layout.share_user_item, mShares, this
+        );
 
         // Show data
         ListView usersList = (ListView) getView().findViewById(R.id.searchUsersListView);
