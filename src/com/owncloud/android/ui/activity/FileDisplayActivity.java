@@ -1537,6 +1537,7 @@ public class FileDisplayActivity extends HookActivity
                 OCFile syncedFile = operation.getLocalFile();
                 onTransferStateChanged(syncedFile, true, true);
                 invalidateOptionsMenu();
+                refreshShowDetails();
             }
         }
     }
