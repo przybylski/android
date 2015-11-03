@@ -116,6 +116,7 @@ public class FileContentProvider extends ContentProvider {
     private static final int DIRECTORY = 2;
     private static final int ROOT_DIRECTORY = 3;
     private static final int SHARES = 4;
+    private static final int CAPABILITIES = 5;
 
     private static final String TAG = FileContentProvider.class.getSimpleName();
 
@@ -379,6 +380,8 @@ public class FileContentProvider extends ContentProvider {
         mUriMatcher.addURI(authority, "dir/#", DIRECTORY);
         mUriMatcher.addURI(authority, "shares/", SHARES);
         mUriMatcher.addURI(authority, "shares/#", SHARES);
+        mUriMatcher.addURI(authority, "capabilities/", CAPABILITIES);
+        mUriMatcher.addURI(authority, "capabilities/#", CAPABILITIES);
 
         return true;
     }
@@ -581,6 +584,10 @@ public class FileContentProvider extends ContentProvider {
                     + ProviderTableMeta.OCSHARES_USER_ID + " INTEGER, "
                     + ProviderTableMeta.OCSHARES_ID_REMOTE_SHARED + " INTEGER,"
                     + ProviderTableMeta.OCSHARES_ACCOUNT_OWNER + " TEXT );" );
+
+            // Create table capabilities
+            createCapabilitiesTable(db);
+
         }
 
         @Override
@@ -796,9 +803,47 @@ public class FileContentProvider extends ContentProvider {
                 Log_OC.i("SQL", "OUT of the ADD in onUpgrade; oldVersion == " + oldVersion +
                         ", newVersion == " + newVersion);
 
+            if (oldVersion < 13 && newVersion >= 13) {
+                Log_OC.i("SQL", "Entering in the #13 ADD in onUpgrade");
+                db.beginTransaction();
+                try {
+                    // Create capabilities table
+                    createCapabilitiesTable(db);
+                    upgraded = true;
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            }
+            if (!upgraded)
+                Log_OC.i("SQL", "OUT of the ADD in onUpgrade; oldVersion == " + oldVersion +
+                        ", newVersion == " + newVersion);
+
         }
     }
 
+    private void createCapabilitiesTable(SQLiteDatabase db){
+        // Create table capabilities
+        db.execSQL("CREATE TABLE " + ProviderTableMeta.CAPABILITIES_TABLE_NAME + "("
+                + ProviderTableMeta._ID + " INTEGER PRIMARY KEY, "
+                + ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + " TEXT, "
+                + ProviderTableMeta.CAPABILITIES_VERSION_MAYOR + " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_VERSION_MINOR + " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_VERSION_MICRO + " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_VERSION_STRING + " TEXT, "
+                + ProviderTableMeta.CAPABILITIES_VERSION_EDITION + " TEXT, "
+                + ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL+ " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED + " INTEGER, "  // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED + " INTEGER, "    // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED + " INTEGER, "  // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL + " INTEGER, "    // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD + " INTEGER, "   // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL + " INTEGER, "  // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_RESHARING + " INTEGER, "        // boolean
+                + ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING+ " INTEGER, "   // boolean
+                + ProviderTableMeta.CAPABILITIES_FILES_UNDELETE + " INTEGER, "  // boolean
+                + ProviderTableMeta.CAPABILITIES_FILES_VERSIONING + " INTEGER );" );   // boolean
+    }
 
     /**
      * Version 10 of database does not modify its scheme. It coincides with the upgrade of the ownCloud account names
