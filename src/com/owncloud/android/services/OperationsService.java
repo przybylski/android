@@ -104,7 +104,7 @@ public class OperationsService extends Service {
     public static final String ACTION_REMOVE = "REMOVE";
     public static final String ACTION_CREATE_FOLDER = "CREATE_FOLDER";
     public static final String ACTION_SYNC_FILE = "SYNC_FILE";
-    public static final String ACTION_SYNC_FOLDER = "SYNC_FOLDER";//for the moment, just to download
+    public static final String ACTION_SYNC_FOLDER = "SYNC_FOLDER";
     public static final String ACTION_MOVE_FILE = "MOVE_FILE";
     public static final String ACTION_COPY_FILE = "COPY_FILE";
 
@@ -237,7 +237,6 @@ public class OperationsService extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
-        //Log_OC.wtf(TAG, "onBind" );
         return mOperationsBinder;
     }
 
@@ -638,7 +637,7 @@ public class OperationsService extends Service {
                     );
                     
                 } else if (action.equals(ACTION_SYNC_FOLDER)) {
-                    // Sync file
+                    // Sync folder (all its descendant files are sync'ed)
                     String remotePath = operationIntent.getStringExtra(EXTRA_REMOTE_PATH);
                     operation = new SynchronizeFolderOperation(
                             this,                       // TODO remove this dependency from construction time
@@ -646,7 +645,7 @@ public class OperationsService extends Service {
                             account, 
                             System.currentTimeMillis()  // TODO remove this dependency from construction time
                     );
-                    
+
                 } else if (action.equals(ACTION_MOVE_FILE)) {
                     // Move file/folder
                     String remotePath = operationIntent.getStringExtra(EXTRA_REMOTE_PATH);
@@ -749,7 +748,6 @@ public class OperationsService extends Service {
             }
         }
         if (count == 0) {
-            //mOperationResults.put(operation.hashCode(), result);
             Pair<RemoteOperation, RemoteOperationResult> undispatched =
                     new Pair<RemoteOperation, RemoteOperationResult>(operation, result);
             mUndispatchedFinishedOperations.put(((Runnable) operation).hashCode(), undispatched);
