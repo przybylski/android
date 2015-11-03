@@ -39,6 +39,9 @@ import com.owncloud.android.db.ProviderMeta.ProviderTableMeta;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.shares.OCShare;
 import com.owncloud.android.lib.resources.shares.ShareType;
+import com.owncloud.android.lib.resources.status.GetRemoteCapabilitiesOperation;
+import com.owncloud.android.lib.resources.status.OCCapability;
+import com.owncloud.android.operations.GetCapabilitiesOperarion;
 import com.owncloud.android.utils.FileStorageUtils;
 
 import java.io.File;
@@ -1733,5 +1736,99 @@ public class FileDataStorageManager {
             }
         }
 
+    }
+
+    public OCCapability saveCapabilities(OCCapability capability){
+
+        // Prepare capabilities data
+        ContentValues cv = new ContentValues();
+        cv.put(ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME, mAccount.name);
+        cv.put(ProviderTableMeta.CAPABILITIES_VERSION_MAYOR, capability.getVersionMayor());
+        cv.put(ProviderTableMeta.CAPABILITIES_VERSION_MINOR, capability.getVersionMinor());
+        cv.put(ProviderTableMeta.CAPABILITIES_VERSION_MICRO, capability.getVersionMicro());
+        cv.put(ProviderTableMeta.CAPABILITIES_VERSION_STRING, capability.getVersionString());
+        cv.put(ProviderTableMeta.CAPABILITIES_VERSION_EDITION, capability.getVersionEdition());
+        cv.put(ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL, capability.getCorePollinterval());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED, capability.isFilesSharingPublicEnabled() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED,
+                capability.isFilesPublicPasswordEnforced() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED,
+                capability.isFilesSharingPublicExpireDateEnabled() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL,
+                capability.isFilesSharingPublicSendMail() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD, capability.isFilesSharingPublicUpload() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL, capability.isFilesSharingUserSendMail() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_RESHARING, capability.isFilesSharingResharing() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING, capability.isFilesBigFileChuncking() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_FILES_UNDELETE, capability.isFilesUndelete() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_FILES_VERSIONING, capability.isFilesVersioning() ? 1 : 0);
+
+        if (capabilityExists(mAccount.name)) {
+            if (getContentResolver() != null) {
+                getContentResolver().update(ProviderTableMeta.CONTENT_URI_CAPABILITIES, cv,
+                        ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=?",
+                        new String[]{mAccount.name});
+            } else {
+                try {
+                    getContentProviderClient().update(ProviderTableMeta.CONTENT_URI_CAPABILITIES,
+                            cv, ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=?",
+                            new String[]{mAccount.name});
+                } catch (RemoteException e) {
+                    Log_OC.e(TAG,
+                            "Fail to insert insert file to database "
+                                    + e.getMessage());
+                }
+            }
+        } else {
+            Uri result_uri = null;
+            if (getContentResolver() != null) {
+                result_uri = getContentResolver().insert(
+                        ProviderTableMeta.CONTENT_URI_CAPABILITIES, cv);
+            } else {
+                try {
+                    result_uri = getContentProviderClient().insert(
+                            ProviderTableMeta.CONTENT_URI_CAPABILITIES, cv);
+                } catch (RemoteException e) {
+                    Log_OC.e(TAG,
+                            "Fail to insert insert capability to database "
+                                    + e.getMessage());
+                }
+            }
+            if (result_uri != null) {
+                long new_id = Long.parseLong(result_uri.getPathSegments()
+                        .get(1));
+                capability.setId(new_id);
+                capability.setAccountName(mAccount.name);
+            }
+        }
+
+        return capability;
+    }
+
+    private boolean capabilityExists(String accountName) {
+        Cursor c;
+        if (getContentResolver() != null) {
+            c = getContentResolver()
+                    .query(ProviderTableMeta.CONTENT_URI,
+                            null,
+                            ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? " ,
+                            new String[]{accountName}, null);
+        } else {
+            try {
+                c = getContentProviderClient().query(
+                        ProviderTableMeta.CONTENT_URI,
+                        null,
+                        ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? " ,
+                        new String[]{accountName}, null);
+            } catch (RemoteException e) {
+                Log_OC.e(TAG,
+                        "Couldn't determine file existance, assuming non existance: "
+                                + e.getMessage());
+                return false;
+            }
+        }
+        boolean retval = c.moveToFirst();
+        c.close();
+        return retval;
     }
 }
