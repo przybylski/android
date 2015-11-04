@@ -185,6 +185,9 @@ public class RefreshFolderOperation extends RemoteOperation {
         
         if (OCFile.ROOT_PATH.equals(mLocalFolder.getRemotePath()) && !mSyncFullAccount) {
             updateOCVersion(client);
+
+            // TODO: think if is the correct place to do that
+            updateCapabilities(client);
         }
         
         result = checkForChanges(client);
@@ -232,7 +235,14 @@ public class RefreshFolderOperation extends RemoteOperation {
         }
     }
 
-    
+    private void updateCapabilities(OwnCloudClient client){
+        GetCapabilitiesOperarion getCapabilities = new GetCapabilitiesOperarion();
+        RemoteOperationResult  result = getCapabilities.execute(mStorageManager,mContext);
+        if (!result.isSuccess()){
+            Log_OC.d(TAG, "Update Capabilities successfull");
+        }
+    }
+
     private RemoteOperationResult checkForChanges(OwnCloudClient client) {
         mRemoteFolderChanged = true;
         RemoteOperationResult result = null;
