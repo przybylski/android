@@ -155,6 +155,47 @@ public class FileContentProvider extends ContentProvider {
                 ProviderTableMeta.OCSHARES_ACCOUNT_OWNER);
     }
 
+    // Projection of Capabilities table
+    private static HashMap<String, String> mCapabilitiesProjectionMap;
+    static {
+        mCapabilitiesProjectionMap = new HashMap<String, String>();
+        mCapabilitiesProjectionMap.put(ProviderTableMeta._ID, ProviderTableMeta._ID);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME,
+                ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_VERSION_MAYOR,
+                ProviderTableMeta.CAPABILITIES_VERSION_MAYOR);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_VERSION_MINOR,
+                ProviderTableMeta.CAPABILITIES_VERSION_MINOR);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_VERSION_MICRO,
+                ProviderTableMeta.CAPABILITIES_VERSION_MICRO);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_VERSION_STRING,
+                ProviderTableMeta.CAPABILITIES_VERSION_STRING);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_VERSION_EDITION,
+                ProviderTableMeta.CAPABILITIES_VERSION_EDITION);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL,
+                ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL,
+                ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_RESHARING,
+                ProviderTableMeta.CAPABILITIES_SHARING_RESHARING);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING,
+                ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_FILES_UNDELETE,
+                ProviderTableMeta.CAPABILITIES_FILES_UNDELETE);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_FILES_VERSIONING,
+                ProviderTableMeta.CAPABILITIES_FILES_VERSIONING);
+    }
+
     private UriMatcher mUriMatcher;
 
     @Override
@@ -254,6 +295,9 @@ public class FileContentProvider extends ContentProvider {
         case SHARES:
             count = db.delete(ProviderTableMeta.OCSHARES_TABLE_NAME, where, whereArgs);
             break;
+        case CAPABILITIES:
+            count = db.delete(ProviderTableMeta.CAPABILITIES_TABLE_NAME, where, whereArgs);
+            break;
         default:
             //Log_OC.e(TAG, "Unknown uri " + uri);
             throw new IllegalArgumentException("Unknown uri: " + uri.toString());
@@ -339,6 +383,17 @@ public class FileContentProvider extends ContentProvider {
             updateFilesTableAccordingToShareInsertion(db, values);
             return insertedShareUri;
 
+        case CAPABILITIES:
+            Uri insertedCapUri = null;
+            long id = db.insert(ProviderTableMeta.CAPABILITIES_TABLE_NAME, null, values);
+            if (id >0) {
+                insertedCapUri =
+                        ContentUris.withAppendedId(ProviderTableMeta.CONTENT_URI_CAPABILITIES, id);
+            } else {
+                throw new SQLException("ERROR " + uri);
+
+            }
+            return insertedCapUri;
 
         default:
             throw new IllegalArgumentException("Unknown uri id: " + uri);
@@ -444,17 +499,30 @@ public class FileContentProvider extends ContentProvider {
                         + uri.getPathSegments().get(1));
             }
             break;
+        case CAPABILITIES:
+            sqlQuery.setTables(ProviderTableMeta.CAPABILITIES_TABLE_NAME);
+            sqlQuery.setProjectionMap(mCapabilitiesProjectionMap);
+            if (uri.getPathSegments().size() > 1) {
+                sqlQuery.appendWhere(ProviderTableMeta._ID + "="
+                        + uri.getPathSegments().get(1));
+            }
+            break;
         default:
             throw new IllegalArgumentException("Unknown uri id: " + uri);
         }
 
         String order;
         if (TextUtils.isEmpty(sortOrder)) {
-            if (mUriMatcher.match(uri) == SHARES) {
-                order = ProviderTableMeta.OCSHARES_DEFAULT_SORT_ORDER;
-            } else {
-
-                order = ProviderTableMeta.FILE_DEFAULT_SORT_ORDER;
+            switch (mUriMatcher.match(uri)) {
+                case SHARES:
+                    order = ProviderTableMeta.OCSHARES_DEFAULT_SORT_ORDER;
+                    break;
+                case CAPABILITIES:
+                    order = ProviderTableMeta.CAPABILITIES_DEFAULT_SORT_ORDER;
+                    break;
+                default: // Files
+                    order = ProviderTableMeta.FILE_DEFAULT_SORT_ORDER;
+                    break;
             }
         } else {
             order = sortOrder;
@@ -499,6 +567,10 @@ public class FileContentProvider extends ContentProvider {
                 return db.update(
                         ProviderTableMeta.OCSHARES_TABLE_NAME, values, selection, selectionArgs
                 );
+            case CAPABILITIES:
+                return db.update(
+                        ProviderTableMeta.CAPABILITIES_TABLE_NAME, values, selection, selectionArgs
+                );
             default:
                 return db.update(
                         ProviderTableMeta.FILE_TABLE_NAME, values, selection, selectionArgs
@@ -542,30 +614,30 @@ public class FileContentProvider extends ContentProvider {
             // files table
             Log_OC.i("SQL", "Entering in onCreate");
             db.execSQL("CREATE TABLE " + ProviderTableMeta.FILE_TABLE_NAME + "("
-                    + ProviderTableMeta._ID + " INTEGER PRIMARY KEY, "
-                    + ProviderTableMeta.FILE_NAME + " TEXT, "
-                    + ProviderTableMeta.FILE_PATH + " TEXT, "
-                    + ProviderTableMeta.FILE_PARENT + " INTEGER, "
-                    + ProviderTableMeta.FILE_CREATION + " INTEGER, "
-                    + ProviderTableMeta.FILE_MODIFIED + " INTEGER, "
-                    + ProviderTableMeta.FILE_CONTENT_TYPE + " TEXT, "
-                    + ProviderTableMeta.FILE_CONTENT_LENGTH + " INTEGER, "
-                    + ProviderTableMeta.FILE_STORAGE_PATH + " TEXT, "
-                    + ProviderTableMeta.FILE_ACCOUNT_OWNER + " TEXT, "
-                    + ProviderTableMeta.FILE_LAST_SYNC_DATE + " INTEGER, "
-                    + ProviderTableMeta.FILE_KEEP_IN_SYNC + " INTEGER, "
-                    + ProviderTableMeta.FILE_LAST_SYNC_DATE_FOR_DATA + " INTEGER, "
-                    + ProviderTableMeta.FILE_MODIFIED_AT_LAST_SYNC_FOR_DATA + " INTEGER, "
-                    + ProviderTableMeta.FILE_ETAG + " TEXT, "
-                    + ProviderTableMeta.FILE_SHARED_VIA_LINK + " INTEGER, "
-                    + ProviderTableMeta.FILE_PUBLIC_LINK  + " TEXT, "
-                    + ProviderTableMeta.FILE_PERMISSIONS  + " TEXT null,"
-                    + ProviderTableMeta.FILE_REMOTE_ID  + " TEXT null,"
-                    + ProviderTableMeta.FILE_UPDATE_THUMBNAIL  + " INTEGER," //boolean
-                    + ProviderTableMeta.FILE_IS_DOWNLOADING  + " INTEGER," //boolean
-                    + ProviderTableMeta.FILE_ETAG_IN_CONFLICT + " TEXT,"
-                    + ProviderTableMeta.FILE_SHARED_WITH_SHAREE + " INTEGER);"
-                    );
+                            + ProviderTableMeta._ID + " INTEGER PRIMARY KEY, "
+                            + ProviderTableMeta.FILE_NAME + " TEXT, "
+                            + ProviderTableMeta.FILE_PATH + " TEXT, "
+                            + ProviderTableMeta.FILE_PARENT + " INTEGER, "
+                            + ProviderTableMeta.FILE_CREATION + " INTEGER, "
+                            + ProviderTableMeta.FILE_MODIFIED + " INTEGER, "
+                            + ProviderTableMeta.FILE_CONTENT_TYPE + " TEXT, "
+                            + ProviderTableMeta.FILE_CONTENT_LENGTH + " INTEGER, "
+                            + ProviderTableMeta.FILE_STORAGE_PATH + " TEXT, "
+                            + ProviderTableMeta.FILE_ACCOUNT_OWNER + " TEXT, "
+                            + ProviderTableMeta.FILE_LAST_SYNC_DATE + " INTEGER, "
+                            + ProviderTableMeta.FILE_KEEP_IN_SYNC + " INTEGER, "
+                            + ProviderTableMeta.FILE_LAST_SYNC_DATE_FOR_DATA + " INTEGER, "
+                            + ProviderTableMeta.FILE_MODIFIED_AT_LAST_SYNC_FOR_DATA + " INTEGER, "
+                            + ProviderTableMeta.FILE_ETAG + " TEXT, "
+                            + ProviderTableMeta.FILE_SHARED_VIA_LINK + " INTEGER, "
+                            + ProviderTableMeta.FILE_PUBLIC_LINK + " TEXT, "
+                            + ProviderTableMeta.FILE_PERMISSIONS + " TEXT null,"
+                            + ProviderTableMeta.FILE_REMOTE_ID + " TEXT null,"
+                            + ProviderTableMeta.FILE_UPDATE_THUMBNAIL + " INTEGER," //boolean
+                            + ProviderTableMeta.FILE_IS_DOWNLOADING + " INTEGER," //boolean
+                            + ProviderTableMeta.FILE_ETAG_IN_CONFLICT + " TEXT,"
+                            + ProviderTableMeta.FILE_SHARED_WITH_SHAREE + " INTEGER);"
+            );
 
             // Create table ocshares
             db.execSQL("CREATE TABLE " + ProviderTableMeta.OCSHARES_TABLE_NAME + "("

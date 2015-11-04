@@ -1809,14 +1809,14 @@ public class FileDataStorageManager {
         Cursor c;
         if (getContentResolver() != null) {
             c = getContentResolver()
-                    .query(ProviderTableMeta.CONTENT_URI,
+                    .query(ProviderTableMeta.CONTENT_URI_CAPABILITIES,
                             null,
                             ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? " ,
                             new String[]{accountName}, null);
         } else {
             try {
                 c = getContentProviderClient().query(
-                        ProviderTableMeta.CONTENT_URI,
+                        ProviderTableMeta.CONTENT_URI_CAPABILITIES,
                         null,
                         ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? " ,
                         new String[]{accountName}, null);

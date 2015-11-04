@@ -25,9 +25,6 @@ import com.owncloud.android.lib.resources.status.GetRemoteCapabilitiesOperation;
 import com.owncloud.android.lib.resources.status.OCCapability;
 import com.owncloud.android.operations.common.SyncOperation;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-
 /**
  * Get and save capabilities from the server
  */
@@ -42,7 +39,7 @@ public class GetCapabilitiesOperarion extends SyncOperation {
             // Read data from the result
             OCCapability capability = (OCCapability) result.getData().get(0);
 
-            // TODO: Save the capabilities into database
+            // Save the capabilities into database
             getStorageManager().saveCapabilities(capability);
         }
 
