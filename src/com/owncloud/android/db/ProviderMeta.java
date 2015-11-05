@@ -108,14 +108,21 @@ public class ProviderMeta {
         public static final String CAPABILITIES_VERSION_STRING = "version_string";
         public static final String CAPABILITIES_VERSION_EDITION = "version_edition";
         public static final String CAPABILITIES_CORE_POLLINTERVAL = "core_pollinterval";
+        public static final String CAPABILITIES_SHARING_API_ENABLED = "sharing_api_enabled";
         public static final String CAPABILITIES_SHARING_PUBLIC_ENABLED = "sharing_public_enabled";
         public static final String CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED = "sharing_public_password_enforced";
         public static final String CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED =
                 "sharing_public_expire_date_enabled";
+        public static final String CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS =
+                "sharing_public_expire_date_days";
+        public static final String CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENFORCED =
+                "sharing_public_expire_date_enforced";
         public static final String CAPABILITIES_SHARING_PUBLIC_SEND_MAIL = "sharing_public_send_mail";
         public static final String CAPABILITIES_SHARING_PUBLIC_UPLOAD = "sharing_public_upload";
         public static final String CAPABILITIES_SHARING_USER_SEND_MAIL = "sharing_user_send_mail";
         public static final String CAPABILITIES_SHARING_RESHARING = "sharing_resharing";
+        public static final String CAPABILITIES_SHARING_FEDERATION_OUTGOING = "sharing_federation_outgoing";
+        public static final String CAPABILITIES_SHARING_FEDERATION_INCOMING = "sharing_federation_incoming";
         public static final String CAPABILITIES_FILES_BIGFILECHUNKING = "files_bigfilechunking";
         public static final String CAPABILITIES_FILES_UNDELETE = "files_undelete";
         public static final String CAPABILITIES_FILES_VERSIONING = "files_versioning";

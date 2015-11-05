@@ -1749,19 +1749,31 @@ public class FileDataStorageManager {
         cv.put(ProviderTableMeta.CAPABILITIES_VERSION_STRING, capability.getVersionString());
         cv.put(ProviderTableMeta.CAPABILITIES_VERSION_EDITION, capability.getVersionEdition());
         cv.put(ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL, capability.getCorePollinterval());
-        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED, capability.isFilesSharingPublicEnabled() ? 1 : 0);
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_API_ENABLED, capability.getFilesSharingApiEnabled().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED,
+                capability.getFilesSharingPublicEnabled().getValue());
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED,
-                capability.isFilesPublicPasswordEnforced() ? 1 : 0);
+                capability.getFilesPublicPasswordEnforced().getValue());
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED,
-                capability.isFilesSharingPublicExpireDateEnabled() ? 1 : 0);
+                capability.getFilesSharingPublicExpireDateEnabled().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS,
+                capability.getFilesSharingPublicExpireDateDays());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENFORCED,
+                capability.getFilesSharingPublicExpireDateEnforced().getValue());
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL,
-                capability.isFilesSharingPublicSendMail() ? 1 : 0);
-        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD, capability.isFilesSharingPublicUpload() ? 1 : 0);
-        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL, capability.isFilesSharingUserSendMail() ? 1 : 0);
-        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_RESHARING, capability.isFilesSharingResharing() ? 1 : 0);
-        cv.put(ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING, capability.isFilesBigFileChuncking() ? 1 : 0);
-        cv.put(ProviderTableMeta.CAPABILITIES_FILES_UNDELETE, capability.isFilesUndelete() ? 1 : 0);
-        cv.put(ProviderTableMeta.CAPABILITIES_FILES_VERSIONING, capability.isFilesVersioning() ? 1 : 0);
+                capability.getFilesSharingPublicSendMail().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD,
+                capability.getFilesSharingPublicUpload().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL,
+                capability.getFilesSharingUserSendMail().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_RESHARING, capability.getFilesSharingResharing().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_OUTGOING,
+                capability.getFilesSharingFederationOutgoing().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_INCOMING,
+                capability.getFilesSharingFederationIncoming().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING, capability.getFilesBigFileChuncking().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_FILES_UNDELETE, capability.getFilesUndelete().getValue());
+        cv.put(ProviderTableMeta.CAPABILITIES_FILES_VERSIONING, capability.getFilesVersioning().getValue());
 
         if (capabilityExists(mAccount.name)) {
             if (getContentResolver() != null) {
@@ -1811,14 +1823,14 @@ public class FileDataStorageManager {
             c = getContentResolver()
                     .query(ProviderTableMeta.CONTENT_URI_CAPABILITIES,
                             null,
-                            ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? " ,
+                            ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? ",
                             new String[]{accountName}, null);
         } else {
             try {
                 c = getContentProviderClient().query(
                         ProviderTableMeta.CONTENT_URI_CAPABILITIES,
                         null,
-                        ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? " ,
+                        ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME + "=? ",
                         new String[]{accountName}, null);
             } catch (RemoteException e) {
                 Log_OC.e(TAG,

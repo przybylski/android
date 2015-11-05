@@ -904,15 +904,20 @@ public class FileContentProvider extends ContentProvider {
                 + ProviderTableMeta.CAPABILITIES_VERSION_MICRO + " INTEGER, "
                 + ProviderTableMeta.CAPABILITIES_VERSION_STRING + " TEXT, "
                 + ProviderTableMeta.CAPABILITIES_VERSION_EDITION + " TEXT, "
-                + ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL+ " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL + " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_SHARING_API_ENABLED + " INTEGER, " // boolean
                 + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED + " INTEGER, "  // boolean
                 + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED + " INTEGER, "    // boolean
                 + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED + " INTEGER, "  // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS + " INTEGER, "
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENFORCED + " INTEGER, " // boolean
                 + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL + " INTEGER, "    // boolean
-                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD + " INTEGER, "   // boolean
-                + ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL + " INTEGER, "  // boolean
-                + ProviderTableMeta.CAPABILITIES_SHARING_RESHARING + " INTEGER, "        // boolean
-                + ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING+ " INTEGER, "   // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD + " INTEGER, "       // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL + " INTEGER, "      // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_RESHARING + " INTEGER, "           // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_OUTGOING + " INTEGER, "     // boolean
+                + ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_INCOMING + " INTEGER, "     // boolean
+                + ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING + " INTEGER, "   // boolean
                 + ProviderTableMeta.CAPABILITIES_FILES_UNDELETE + " INTEGER, "  // boolean
                 + ProviderTableMeta.CAPABILITIES_FILES_VERSIONING + " INTEGER );" );   // boolean
     }
