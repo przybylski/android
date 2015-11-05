@@ -39,9 +39,7 @@ import com.owncloud.android.db.ProviderMeta.ProviderTableMeta;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.shares.OCShare;
 import com.owncloud.android.lib.resources.shares.ShareType;
-import com.owncloud.android.lib.resources.status.GetRemoteCapabilitiesOperation;
 import com.owncloud.android.lib.resources.status.OCCapability;
-import com.owncloud.android.operations.GetCapabilitiesOperarion;
 import com.owncloud.android.utils.FileStorageUtils;
 
 import java.io.File;
