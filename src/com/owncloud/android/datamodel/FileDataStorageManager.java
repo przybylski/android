@@ -39,6 +39,7 @@ import com.owncloud.android.db.ProviderMeta.ProviderTableMeta;
 import com.owncloud.android.lib.common.utils.Log_OC;
 import com.owncloud.android.lib.resources.shares.OCShare;
 import com.owncloud.android.lib.resources.shares.ShareType;
+import com.owncloud.android.lib.resources.status.CapabilityBooleanType;
 import com.owncloud.android.lib.resources.status.OCCapability;
 import com.owncloud.android.utils.FileStorageUtils;
 
@@ -1751,7 +1752,7 @@ public class FileDataStorageManager {
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED,
                 capability.getFilesSharingPublicEnabled().getValue());
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED,
-                capability.getFilesPublicPasswordEnforced().getValue());
+                capability.getFilesSharingPublicPasswordEnforced().getValue());
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED,
                 capability.getFilesSharingPublicExpireDateEnabled().getValue());
         cv.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS,
@@ -1816,7 +1817,17 @@ public class FileDataStorageManager {
     }
 
     private boolean capabilityExists(String accountName) {
-        Cursor c;
+        Cursor c = getCapabilityCursorForAccount(accountName);
+        boolean exists = false;
+        if (c != null) {
+            exists = c.moveToFirst();
+            c.close();
+        }
+        return exists;
+    }
+
+    private Cursor getCapabilityCursorForAccount(String accountName){
+        Cursor c = null;
         if (getContentResolver() != null) {
             c = getContentResolver()
                     .query(ProviderTableMeta.CONTENT_URI_CAPABILITIES,
@@ -1832,13 +1843,76 @@ public class FileDataStorageManager {
                         new String[]{accountName}, null);
             } catch (RemoteException e) {
                 Log_OC.e(TAG,
-                        "Couldn't determine file existance, assuming non existance: "
+                        "Couldn't determine capability existance, assuming non existance: "
                                 + e.getMessage());
-                return false;
             }
         }
-        boolean retval = c.moveToFirst();
+
+        return c;
+
+    }
+    public OCCapability getCapability(String accountName){
+        OCCapability capability = null;
+        Cursor c = getCapabilityCursorForAccount(accountName);
+
+        if (c.moveToFirst()) {
+            capability = createCapabilityInstance(c);
+        }
         c.close();
-        return retval;
+        return capability;
+    }
+
+    private OCCapability createCapabilityInstance(Cursor c) {
+        OCCapability capability = null;
+        if (c != null) {
+            capability = new OCCapability();
+            capability.setId(c.getLong(c.getColumnIndex(ProviderTableMeta._ID)));
+            capability.setAccountName(c.getString(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_ACCOUNT_NAME)));
+            capability.setVersionMayor(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_VERSION_MAYOR)));
+            capability.setVersionMinor(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_VERSION_MINOR)));
+            capability.setVersionMicro(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_VERSION_MICRO)));
+            capability.setVersionString(c.getString(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_VERSION_STRING)));
+            capability.setVersionEdition(c.getString(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_VERSION_EDITION)));
+            capability.setCorePollinterval(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL)));
+            capability.setFilesSharingApiEnabled(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_API_ENABLED))));
+            capability.setFilesSharingPublicEnabled(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED))));
+            capability.setFilesSharingPublicPasswordEnforced(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED))));
+            capability.setFilesSharingPublicExpireDateEnabled(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED))));
+            capability.setFilesSharingPublicExpireDateDays(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS)));
+            capability.setFilesSharingPublicExpireDateEnforced(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENFORCED))));
+            capability.setFilesSharingPublicSendMail(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL))));
+            capability.setFilesSharingPublicUpload(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD))));
+            capability.setFilesSharingUserSendMail(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL))));
+            capability.setFilesSharingResharing(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_RESHARING))));
+            capability.setFilesSharingFederationOutgoing(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_OUTGOING))));
+            capability.setFilesSharingFederationIncoming(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_INCOMING))));
+            capability.setFilesBigFileChuncking(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING))));
+            capability.setFilesUndelete(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_FILES_UNDELETE))));
+            capability.setFilesVersioning(CapabilityBooleanType.fromValue(c.getInt(c
+                    .getColumnIndex(ProviderTableMeta.CAPABILITIES_FILES_VERSIONING))));
+
+        }
+        return capability;
     }
 }
