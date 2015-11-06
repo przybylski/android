@@ -174,12 +174,18 @@ public class FileContentProvider extends ContentProvider {
                 ProviderTableMeta.CAPABILITIES_VERSION_EDITION);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL,
                 ProviderTableMeta.CAPABILITIES_CORE_POLLINTERVAL);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_API_ENABLED,
+                ProviderTableMeta.CAPABILITIES_SHARING_API_ENABLED);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED,
                 ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_ENABLED);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED,
                 ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_PASSWORD_ENFORCED);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED,
                 ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENABLED);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_DAYS);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENFORCED,
+                ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_EXPIRE_DATE_ENFORCED);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL,
                 ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_SEND_MAIL);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_PUBLIC_UPLOAD,
@@ -188,6 +194,10 @@ public class FileContentProvider extends ContentProvider {
                 ProviderTableMeta.CAPABILITIES_SHARING_USER_SEND_MAIL);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_RESHARING,
                 ProviderTableMeta.CAPABILITIES_SHARING_RESHARING);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_OUTGOING,
+                ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_OUTGOING);
+        mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_INCOMING,
+                ProviderTableMeta.CAPABILITIES_SHARING_FEDERATION_INCOMING);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING,
                 ProviderTableMeta.CAPABILITIES_FILES_BIGFILECHUNKING);
         mCapabilitiesProjectionMap.put(ProviderTableMeta.CAPABILITIES_FILES_UNDELETE,

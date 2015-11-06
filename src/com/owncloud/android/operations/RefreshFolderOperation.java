@@ -186,12 +186,6 @@ public class RefreshFolderOperation extends RemoteOperation {
         if (OCFile.ROOT_PATH.equals(mLocalFolder.getRemotePath()) && !mSyncFullAccount) {
             updateOCVersion(client);
 
-            // Update Capabilities for this account
-            if (client.getOwnCloudVersion().isVersionWithCapabililtiesAPI()) {
-                updateCapabilities(client);
-            } else {
-                Log_OC.d(TAG, "Capabilities aPI disabled");
-            }
         }
         
         result = checkForChanges(client);
@@ -236,6 +230,13 @@ public class RefreshFolderOperation extends RemoteOperation {
         RemoteOperationResult result = update.execute(client);
         if (result.isSuccess()) {
             mIsShareSupported = update.getOCVersion().isSharedSupported();
+
+            // Update Capabilities for this account
+            if (update.getOCVersion().isVersionWithCapabililtiesAPI()) {
+                updateCapabilities(client);
+            } else {
+                Log_OC.d(TAG, "Capabilities API disabled");
+            }
         }
     }
 
